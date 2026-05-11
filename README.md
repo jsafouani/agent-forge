@@ -81,6 +81,8 @@ Phase 8    Code Review               (diff-scoped in enhance mode, OWASP + auth 
 Phase 8.5  UAT Plan                  (enhance mode only)
 Phase 9    Roster Review             (self-improvement — see above)
 Phase 10   Open PR                   (mode-aware body)
+───────────────────────────────────  ← end of the loop; PR is open
+Phase 11   Observe                   (v2 — persists run as events in ~/.claude/work-graph.jsonl)
 ```
 
 Two modes:
@@ -88,6 +90,41 @@ Two modes:
 - **Enhance** — modifies an existing repo surgically. Auto-detected from `cwd` in loose-ask flow (git repo → enhance). Adds Phase 3.5 / 3.6 / 8.5 sub-phases for codebase audit, baseline capture, and UAT planning.
 
 Mode is auto-detected for loose asks, explicit (`## Mode: enhance`) when in a `BRIEF.md`.
+
+---
+
+## v2: Persistent work graph + stewards
+
+v1's audit journal (`~/.claude/skills/.history.jsonl`) records roster changes within Phase 9. v2 makes the forge **persistent across runs** by introducing a global event graph and a framework of agents that read it.
+
+### Phase 11 — Observe
+
+After every `/forge` run, the new **Observe** phase distills the run into structured JSONL events and appends them to `~/.claude/work-graph.jsonl`. Events include `run_started`, `brief_filed`, `phase_completed`, `decision_logged`, `gap_logged`, `pr_opened`, `run_ended`. Only metadata is logged — never brief text, spec content, or source code. Users can opt out by creating `~/.claude/work-graph.optout` (Phase 11 then becomes a no-op).
+
+The schema is part of the [Stable Core](STABLE_CORE.md) — additive evolution only, no breaking changes. New event types may be added; existing ones may not be renamed or have their semantics changed.
+
+### Stewards
+
+A **steward** is a manually- or cron-triggered agent that reads the work graph and writes recommendations to `~/.claude/inbox.md`. Stewards are explicitly **outside the Stable Core** — they are the crowd's primary expansion surface.
+
+v2.0 ships **one** steward:
+
+| Steward | Job | Trigger |
+|---|---|---|
+| `stale-skill-reaper` | Finds skills unused for 60+ days; recommends `fire` (recommend-only — never auto-removes) | `/forge steward stale-skill-reaper` |
+
+The remaining four (`Sentinel`, `ConfigAuditor`, `PhaseROI`, `ChangeGate`) follow in v2.1–v2.4, each its own minor release. The roster mirrors a data-governance steward pattern that ports cleanly across domains — same framework primitives (event graph + sidecar agents + recommendation inbox), different node types in the graph.
+
+### Two new arg forms in `/forge`
+
+- **`/forge inbox`** — print the inbox file and exit. No phases dispatched.
+- **`/forge steward <name>`** — run a single steward and exit. No worktree created.
+
+Both arg forms are handled inside `SKILL.md` *before* brief-source resolution, so they always work — even on a fresh install with no `BRIEF.md` in the working directory.
+
+### Why this matters
+
+The v1 forge starts each run amnesiac. The work graph gives v2 the first persistent memory layer across runs. Once the graph exists, the stewards turn it into actionable intelligence: which skills earned their keep, which phases are silently failing, which decisions you keep overriding post-merge. **The graph is the foundation; everything else stacks on it.**
 
 ---
 
@@ -184,14 +221,14 @@ After every read-only phase, the orchestrator runs `git status --short` and veri
 ### Install as a user-level skill
 
 ```bash
-git clone https://github.com/<your-username>/agent-forge.git ~/.claude/skills/workflow-agents-loop
+git clone https://github.com/jsafouani/agent-forge.git ~/.claude/skills/workflow-agents-loop
 ```
 
 ### Install as a project-level skill
 
 ```bash
 cd <your-project>
-git clone https://github.com/<your-username>/agent-forge.git .claude/skills/workflow-agents-loop
+git clone https://github.com/jsafouani/agent-forge.git .claude/skills/workflow-agents-loop
 ```
 
 ### Run
@@ -229,6 +266,8 @@ See [examples/BRIEF-example.md](examples/BRIEF-example.md) for the 3-field BRIEF
 | **Evidence-based phase verification** | ❌ | ❌ | ❌ | ✅ |
 | **Decision Log with confidence scoring** | ❌ | ❌ | ❌ | ✅ |
 | **Auto-handoff on context exhaustion** | ❌ | ❌ | ❌ | ✅ |
+| **Persistent work graph across runs (v2)** | ❌ | ❌ | ❌ | ✅ |
+| **Steward framework for cross-run intelligence (v2)** | ❌ | ❌ | ❌ | ✅ |
 | Runs on Claude Code (no separate runtime) | ❌ | ❌ | ❌ | ✅ |
 
 The "popular frameworks" column is uncharitable on purpose — those frameworks are great at the orchestration *primitive* and don't try to be opinionated about the self-improvement *system*. `agent-forge` makes the opposite tradeoff: it's locked to one runtime (Claude Code) in exchange for a much more opinionated take on what an agent crowd *should* do over time.
@@ -245,9 +284,11 @@ If you ship a PR with `agent-forge`, file an issue with the PR link. I'd like a 
 
 ## Roadmap
 
-- **v5 (current — in development):** Auto-handoff at phase boundaries (✅ shipped), evidence-based phase verification (✅ shipped), per-phase context filtering (✅ shipped).
-- **v6 (planned):** Multi-repo enhance mode (cross-cutting changes that span 2+ git repos). Heuristic cost predictor that warns when a brief is likely to consume > $X in tokens before running. Per-phase token budgets with hard caps.
-- **v7 (longer):** Champion-challenger trials with statistical significance gating (currently a soft heuristic).
+- **v2.0 (current — in progress):** Phase 11 Observe persists each run as JSONL events. First steward (`stale-skill-reaper`) recommends pruning unused skills. New arg forms `/forge inbox` and `/forge steward <name>`. See [BRIEF-v2.md](BRIEF-v2.md) for the brief the forge runs against itself.
+- **v2.1 – v2.4 (planned, one steward per minor release):** `Sentinel` (cross-run contract enforcement), `ConfigAuditor` (model-tier and Stable Core drift detection), `PhaseROI` (cost-vs-value pruning of phases), `ChangeGate` (generalized risk gating for Stable Core / auth / multi-tenant changes).
+- **v3.0 (planned):** Always-on stewards via cron / file-watcher / git-hook triggers. Salience filter for inbox prioritization. Optional cross-machine sync of the work graph (so the same `~/.claude/work-graph.jsonl` follows you across laptop and desktop).
+- **v4.0 (longer):** Pre-Mortem phase (Phase 3.7) between Synthesis and Spec — generates top failure modes the spec must explicitly address. Multi-repo enhance mode (changes that span 2+ git repos). Heuristic cost predictor that warns when a brief is likely to consume > $X in tokens before running.
+- **v5.0 (longer):** Champion-challenger trials with statistical significance gating (currently a soft heuristic). Inverted tasking (the forge surfaces what *you* should act on next, not just responds to your asks).
 
 ---
 
@@ -259,9 +300,10 @@ agent-forge/
 ├── LICENSE                    ← MIT
 ├── SKILL.md                   ← the orchestrator (read this if you want to know exactly what happens)
 ├── CONTRACT.md                ← the Crowd Contract
-├── STABLE_CORE.md             ← the six immutable skills
+├── STABLE_CORE.md             ← six immutable skills + work-graph event schema (v2)
+├── CHANGELOG.md               ← release notes
 ├── forge-context-template.md  ← shared state file each run creates from this
-├── phases/                    ← 16 phase prompts
+├── phases/                    ← 17 phase prompts (16-phase loop + v2 Observe)
 │   ├── brief-synthesis.md     ← Phase 0
 │   ├── market-research.md     ← Phase 2A
 │   ├── tech-landscape.md      ← Phase 2B
@@ -277,7 +319,10 @@ agent-forge/
 │   ├── code-review.md         ← Phase 8
 │   ├── uat-plan.md            ← Phase 8.5
 │   ├── roster-review.md       ← Phase 9 (self-improvement)
-│   └── open-pr.md             ← Phase 10
+│   ├── open-pr.md             ← Phase 10
+│   └── observe.md             ← Phase 11 (v2 — persists run to ~/.claude/work-graph.jsonl)
+├── stewards/                  ← v2 — manually/cron-triggered agents reading the work graph
+│   └── stale-skill-reaper.md  ← v2.0 — flags skills unused for 60+ days
 ├── templates/
 │   ├── HANDOFF-template.md          ← auto-handoff format
 │   ├── smoke-test-interactive-template.md
@@ -305,7 +350,6 @@ MIT — see [LICENSE](LICENSE).
 **Jaouad Safouani** — Staff Engineer building production AI systems.
 
 - LinkedIn: [linkedin.com/in/jaouadsafouani](https://www.linkedin.com/in/jaouadsafouani)
-- GitHub: [github.com/jaouadsafouani](https://github.com/jaouadsafouani)
-- Blog: [poweryourbi.com/blog](https://poweryourbi.com/blog)
+- GitHub: [github.com/jsafouani](https://github.com/jsafouani)
 
 If you ship a PR with this, I want to hear about it. If you have ideas for what the next design primitive should be, open an issue.

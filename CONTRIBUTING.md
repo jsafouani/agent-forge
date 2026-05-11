@@ -28,10 +28,23 @@ PRs that loosen `## Recommended model:` defaults, weaken evidence-based phase ve
 
 ## How to develop locally
 
-1. Clone the repo to `~/.claude/skills/workflow-agents-loop` (user-level) or to `<your-project>/.claude/skills/workflow-agents-loop` (project-level).
+1. Clone the repo to `~/.claude/skills/workflow-agents-loop` (user-level) or to `<your-project>/.claude/skills/workflow-agents-loop` (project-level):
+
+   ```bash
+   git clone https://github.com/jsafouani/agent-forge.git ~/.claude/skills/workflow-agents-loop
+   ```
 2. Make changes.
 3. Run `/forge "test brief that exercises your change"` against a scratch repo.
 4. Check the audit journal at `~/.claude/skills/.history.jsonl` to verify your change didn't trip Phase 9 unexpectedly.
+
+## Reporting bugs
+
+Use the issue templates in `.github/ISSUE_TEMPLATE/`. The most useful bug reports include:
+
+- The exact `/forge` invocation.
+- The contents of `forge-context.md` from the failing worktree (redact anything sensitive).
+- The phase that failed and the verification command's actual output.
+- Your Claude Code version (`claude --version`) and OS.
 
 ## Code of conduct
 

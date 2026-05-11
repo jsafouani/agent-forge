@@ -1,6 +1,6 @@
 ---
 name: workflow-agents-loop
-description: Autonomous software forge — accepts a BRIEF.md OR a loose inline ask (e.g. /forge "research X") and runs an 11-phase directed graph of specialist agents to produce a PR with working code. Loose asks are auto-expanded into a BRIEF.md in the current directory by Phase 0 (Brief Synthesis). Supports greenfield (default) and enhance (modify existing repo) modes; mode is auto-detected from cwd in loose-ask flow (git repo → enhance). The crowd hires, fires, and sharpens its own roster across runs while protecting a Stable Core. Invoke with /forge or /workflow-agents-loop.
+description: Autonomous software forge — accepts a BRIEF.md OR a loose inline ask (e.g. /forge "research X") and runs a 16-phase directed graph of specialist agents to produce a PR with working code. Loose asks are auto-expanded into a BRIEF.md in the current directory by Phase 0 (Brief Synthesis). Supports greenfield (default) and enhance (modify existing repo) modes; mode is auto-detected from cwd in loose-ask flow (git repo → enhance). The crowd hires, fires, and sharpens its own roster across runs while protecting a Stable Core. Invoke with /forge or /workflow-agents-loop.
 paths: ["BRIEF.md"]
 ---
 
@@ -131,7 +131,7 @@ The check evaluates 3 signals (read from `## Run Stats`):
 3. Write the populated content to `<worktree>/HANDOFF.md`.
 4. Print to the user:
    ```
-   ⚠ /forge phase boundary check triggered handoff at phase {{N}} of 11.
+   ⚠ /forge phase boundary check triggered handoff at phase {{N}} of 16.
    HANDOFF.md written to {{WORKTREE_PATH}}/HANDOFF.md
    Resume with: /forge --resume {{WORKTREE_PATH}}
    ```
@@ -148,8 +148,8 @@ The thresholds are intentionally conservative — typical short runs (e.g., the 
 This skill's base directory will be provided to you at invocation time (Claude Code shows `Base directory for this skill: <path>` when the skill loads). All references to `phases/<file>.md`, `forge-context-template.md`, `CONTRACT.md`, and `STABLE_CORE.md` in the steps below are RELATIVE TO THAT BASE DIRECTORY.
 
 When you read those files, prepend the base directory. Example:
-- If skill base is `/c/Users/jaoua/.claude/skills/workflow-agents-loop/`, then `phases/market-research.md` resolves to `/c/Users/jaoua/.claude/skills/workflow-agents-loop/phases/market-research.md`.
-- If skill base is `/path/to/project/.claude/skills/workflow-agents-loop/`, the same logic applies.
+- If skill base is `~/.claude/skills/workflow-agents-loop/`, then `phases/market-research.md` resolves to `~/.claude/skills/workflow-agents-loop/phases/market-research.md`.
+- If skill base is `<project>/.claude/skills/workflow-agents-loop/`, the same logic applies.
 
 This makes the skill portable — it works whether installed user-level or project-level.
 
@@ -172,7 +172,33 @@ Phase 8   : Code Review                 (mode-aware; enhance is diff-scoped)
 Phase 8.5 : UAT Plan                    (NEW — enhance mode only)
 Phase 9   : Roster Review               (unchanged)
 Phase 10  : Open PR                     (mode-aware body)
+Phase 11  : Observe                     (NEW v2.0 — appends events to ~/.claude/work-graph.jsonl)
 ```
+
+## Step 0 — Arg-form dispatch (v2.0)
+
+Before any brief processing, check if the invocation argument matches a v2.0 arg form. If matched, dispatch and exit — do NOT create a worktree, do NOT read BRIEF.md.
+
+**Arg form 1: `/forge inbox`** — print the inbox file and exit.
+
+If the argument is exactly the word `inbox` (no whitespace, case-insensitive):
+
+1. Check `test -f ~/.claude/inbox.md`.
+   - If missing → print `Inbox empty. Run a steward to populate it (e.g., /forge steward stale-skill-reaper).` and exit 0.
+   - If present → print the file contents verbatim to stdout, then exit 0.
+2. Do NOT dispatch any phases. Do NOT write to the work graph (no `subagent_dispatched` events).
+
+**Arg form 2: `/forge steward <name>`** — run one steward.
+
+If the argument starts with the word `steward ` (with trailing space, case-insensitive):
+
+1. Extract `<name>` (everything after the first whitespace, stripped).
+2. Resolve the steward prompt path: `stewards/<name>.md` relative to this skill's base directory.
+3. If the file does not exist → print `Unknown steward: <name>. Available stewards:` followed by `ls -1 <base>/stewards/`, then exit 1.
+4. If found → read the file as the steward's prompt and dispatch a single agent with it. Wait for the agent to complete. Print the agent's final status line to the user. Exit with the agent's exit code.
+5. Do NOT create a worktree. Stewards operate against `~/.claude/work-graph.jsonl` and `~/.claude/inbox.md` — they do not need a brief or a target repo.
+
+**Anything else** — fall through to Step 1 (brief source resolution) as before.
 
 ## Step 1 — Read and validate the brief (mode-aware)
 
@@ -408,9 +434,35 @@ If any change applied or any rollback occurred, also print:
 
 Read `phases/open-pr.md`, inject tokens, spawn agent. The PR body is mode-aware: enhance mode inlines the UAT checklist, baseline-test status, coverage delta, and files-touched list. Wait for completion.
 
-Print to the user:
+Print to the user (intermediate progress, not the final line yet):
 ```
-✓ /forge complete — PR opened at [PR URL from forge-context.md]
+✓ Phase 10: Open PR complete — [PR URL from forge-context.md]
+```
+
+## Step 13 — Observe (v2.0)
+
+Read `phases/observe.md`, inject tokens, spawn agent. **Phase 11 (Observe)** appends structured JSONL events to `~/.claude/work-graph.jsonl` so future runs and stewards can reason about this run.
+
+This phase is **best-effort, not gating**. If Observe reports `BLOCKED` (can't write to `~/.claude/`), `DONE_SKIPPED` (user opt-out sentinel present), or fails entirely, the orchestrator does NOT retry — the PR is already open, the run's deliverable is shipped. Log the outcome to `## Phase Log` and continue to the final print.
+
+Verification command (orchestrator runs after agent reports DONE):
+
+```bash
+tail -100 ~/.claude/work-graph.jsonl 2>/dev/null | jq -c 'select(.run_id == "{{SLUG}}")' | wc -l
+```
+
+Pass condition: `>= 5` (the minimum event count from `phases/observe.md`). If the count is less, log to `## Known Gaps / Blockers` but still continue to the final print.
+
+After Observe completes (or is skipped), print to the user:
+
+```
+✓ /forge complete — PR opened at [PR URL] (work-graph events: <N>)
+```
+
+If Observe was skipped via opt-out:
+
+```
+✓ /forge complete — PR opened at [PR URL] (work-graph: opted out)
 ```
 
 ## Error handling

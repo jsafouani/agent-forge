@@ -38,7 +38,7 @@ enhance
 
 ## Target Repo
 
-/Users/jaouad/projects/my-existing-app
+/Users/you/projects/my-existing-app
 
 ## Idea
 
