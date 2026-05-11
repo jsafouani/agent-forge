@@ -20,9 +20,12 @@ Add to your crontab (`crontab -e`):
   claude --prompt "/forge steward config-auditor"       --no-interactive ; \
   claude --prompt "/forge steward phase-roi"            --no-interactive ; \
   claude --prompt "/forge steward change-gate"          --no-interactive ; \
-  claude --prompt "/forge inbox --reprioritize"         --no-interactive \
+  claude --prompt "/forge inbox --reprioritize"         --no-interactive ; \
+  claude --prompt "/forge attend"                       --no-interactive \
 )' >> $HOME/.claude/triggers.log 2>&1
 ```
+
+> Note (v5.0): the trailing `/forge attend` call generates `~/.claude/attention.md` — the prioritized list of things YOU should act on, paired with the steward inbox.
 
 Output goes to `~/.claude/triggers.log` — rotate this file periodically (it grows). Add `logrotate` config if you care.
 

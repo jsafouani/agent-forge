@@ -177,6 +177,7 @@ Phase 11  : Observe                     (NEW v2.0 — appends events to ~/.claud
 
 Out-of-loop phases (v3.0+):
 Salience Filter                         (re-ranks ~/.claude/inbox.md; invoked by triggers + /forge inbox --reprioritize)
+Inverted Tasking                        (NEW v5.0 — produces ~/.claude/attention.md; invoked by /forge attend)
 ```
 
 ## Step 0 — Arg-form dispatch (v2.0)
@@ -200,6 +201,15 @@ If the argument is `inbox --reprioritize` (case-insensitive):
 2. After the phase rewrites the inbox in salience order, print the new contents to stdout.
 3. Exit 0.
 4. This is the path the v3.0 triggers (cron-daily, git-post-commit, file-watcher) invoke after running stewards — keeps the inbox always sorted by attention priority.
+
+**Arg form 1c: `/forge attend`** (v5.0) — generate and print the attention queue.
+
+If the argument is exactly the word `attend` (no whitespace, case-insensitive):
+
+1. Dispatch the inverted-tasking phase: read `phases/inverted-tasking.md`, inject `{{ATTENTION_PATH}}` = `~/.claude/attention.md`, spawn agent. Wait for completion (time-boxed at 90 s).
+2. Read `~/.claude/attention.md` and print contents to stdout.
+3. Exit 0.
+4. This is the *"Sir, you should…"* form — the forge tells you what to act on next based on the work graph, inbox, and your PR / review activity. Daily cron triggers can invoke this automatically.
 
 **Arg form 2: `/forge steward <name>`** — run one steward.
 
