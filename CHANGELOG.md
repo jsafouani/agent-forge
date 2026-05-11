@@ -4,13 +4,13 @@ All notable changes to `agent-forge` are recorded here. The project follows [Kee
 
 ## [Unreleased]
 
-_The core Jarvis arc is complete (v2.0 → v5.0). Future directions (post-v5):_
+_The core forge arc is complete (v2.0 → v5.0). The forge is now an ambient engineering presence, not a tool you invoke. Future directions (post-v5):_
 
 - _v6.0: cross-machine work-graph sync_
 - _v6.x: quantitative cost prediction in Pre-Mortem (parameterized by historical phase costs)_
 - _v7.0: voice input/output (Whisper + TTS) — the easiest layer, intentionally last_
 
-## [5.0.0] — 2026-05-11 — Inverted tasking (the iconic Jarvis quality)
+## [5.0.0] — 2026-05-11 — Inverted tasking (the forge directs your attention)
 
 ### Added
 
@@ -32,7 +32,7 @@ _The core Jarvis arc is complete (v2.0 → v5.0). Future directions (post-v5):_
 - `SKILL.md` Step 0 (arg-form dispatch) gains `/forge attend`.
 - Phase map adds Inverted Tasking as a second out-of-loop entry alongside the Salience Filter.
 
-### The Jarvis arc is complete
+### The forge arc is complete
 
 | Layer | Quality | Release |
 |---|---|---|
@@ -42,13 +42,13 @@ _The core Jarvis arc is complete (v2.0 → v5.0). Future directions (post-v5):_
 | Pre-Mortem simulation | Anticipates failure modes | v4.0 |
 | **Inverted tasking** | **Directs your attention** | **v5.0** |
 
-Together they constitute the Jarvis quality. The forge is no longer a tool you invoke — it's a presence that knows what you've done, what you're doing, what's likely to go wrong, and what you should do next. The hand-off from "agent for engineering tasks" to "ambient engineering partner" is complete.
+Together they constitute the forge as a **presence**. The forge is no longer a tool you invoke — it knows what you've done, what you're doing, what's likely to go wrong, and what you should do next. The hand-off from "agent for engineering tasks" to "ambient engineering partner" is complete.
 
 ### What v5.0 is NOT
 
 - **Not an auto-actor.** The forge surfaces; you decide. Even when the queue says *"merge PR #42 — 0 conflicts, 2 LGTM"*, the forge does not merge.
 - **Not infallible.** The forge is wrong sometimes — about which PR matters most, about which Sentinel pattern is signal vs. noise. Treat the queue as a high-quality first draft, not a verdict.
-- **Not the final form.** v6.0+ explorations (multi-machine sync, quantitative cost prediction in Pre-Mortem, voice IO) are still ahead. But v5.0 closes the core arc the Jarvis vision was structured around.
+- **Not the final form.** v6.0+ explorations (multi-machine sync, quantitative cost prediction in Pre-Mortem, voice IO) are still ahead. But v5.0 closes the **core arc** the forge was structured around — observation, ambient triggering, anticipation, and inverted tasking.
 
 ## [4.0.0] — 2026-05-11 — Pre-Mortem (Phase 3.7) — failure-mode drafting before Spec
 
@@ -68,7 +68,7 @@ Together they constitute the Jarvis quality. The forge is no longer a tool you i
 
 ### Architectural significance
 
-This is **Layer 3** of the Jarvis vector — the *"I've run 6 million scenarios"* anticipation quality, except deterministic and explicit instead of opaque LLM hand-wave. Combined with v2 (observability) and v3.0 (ambient triggers), the forge now:
+This is **Layer 3** of the forge arc — the *"I've run 6 million scenarios"* anticipation quality, except deterministic and explicit instead of opaque LLM hand-wave. Combined with v2 (observability) and v3.0 (ambient triggers), the forge now:
 
 - **Observes** itself (v2 fleet)
 - **Reacts** to its environment (v3.0 triggers)
@@ -95,7 +95,7 @@ The final layer (v5.0 inverted tasking) gives the forge the *"Sir, you should…
 
 ### Architectural significance
 
-This is the **qualitative tipping point** in the Jarvis vector. Before v3.0, the forge waits to be invoked. After v3.0, the forge is **ambient** — stewards run on time (cron), git activity (post-commit), and roster mutations (file watcher), and the inbox stays sorted by attention priority without the user thinking about it. v4.0 (pre-mortem) and v5.0 (inverted tasking) stack on this foundation.
+This is the **qualitative tipping point** in the forge arc. Before v3.0, the forge waits to be invoked. After v3.0, the forge is **ambient** — stewards run on time (cron), git activity (post-commit), and roster mutations (file watcher), and the inbox stays sorted by attention priority without the user thinking about it. v4.0 (pre-mortem) and v5.0 (inverted tasking) stack on this foundation.
 
 ## [2.4.0] — 2026-05-11 — ChangeGate (generalized risk gating)
 

@@ -4,7 +4,7 @@
 
 Inverts the agent–user relationship. The default forge model: *user files a brief → forge produces a PR.* Inverted Tasking flips it: **the forge produces an attention queue → user acts on it**.
 
-This is the iconic Jarvis quality. Where v2.0–v4.0 made the forge observant, ambient, and anticipatory, **v5.0 makes the forge proactive about your time**.
+This is the forge as **presence** — proactive about your time. Where v2.0–v4.0 made the forge observant, ambient, and anticipatory, **v5.0 makes the forge an attention director**.
 
 Output: `~/.claude/attention.md` — a ranked queue of things YOU should act on, with evidence and a recommended next action for each. The forge tells you *"Sir, you should…"* — not *"Sir, what should I build?"*.
 
@@ -178,11 +178,11 @@ Daily cron trigger (`triggers/cron-daily.md`) is updated in v5.0 to also invoke 
 | Layer 3 (v4.0) | The forge anticipates failure |
 | **Inverted tasking (v5.0)** | **The forge directs your attention** |
 
-Together they constitute the Jarvis quality. The forge is no longer a tool you invoke — it's a presence that knows what you've done, what you're doing, what's likely to go wrong, and what you should do next. The hand-off from "agent for engineering tasks" to "ambient engineering partner" is complete.
+Together they constitute the forge as a **presence**. The forge is no longer a tool you invoke — it knows what you've done, what you're doing, what's likely to go wrong, and what you should do next. The hand-off from "agent for engineering tasks" to "ambient engineering partner" is complete.
 
 ## What this is NOT
 
 - Not an auto-actor. The forge surfaces; you decide.
 - Not a replacement for your judgment. Items are ranked but you re-rank by reading.
 - Not perfect. The forge is wrong sometimes — about which PR matters most, about which Sentinel pattern is real signal vs. noise. Treat the queue as a high-quality first draft, not a verdict.
-- Not the end. v6.0+ explorations (multi-machine sync, cross-user graph aggregation, pre-mortem simulation with quantitative cost predictions) are still ahead — but v5.0 closes the core Jarvis arc.
+- Not the end. v6.0+ explorations (multi-machine sync, cross-user graph aggregation, pre-mortem simulation with quantitative cost predictions) are still ahead — but v5.0 closes the core forge arc.
