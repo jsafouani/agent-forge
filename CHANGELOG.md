@@ -4,7 +4,21 @@ All notable changes to `agent-forge` are recorded here. The project follows [Kee
 
 ## [Unreleased]
 
-_Nothing yet. Next: `Sentinel` steward (v2.1.0)._
+_Nothing yet. Next: `ConfigAuditor` steward (v2.2.0)._
+
+## [2.1.0] — 2026-05-11 — Sentinel (cross-run contract enforcement)
+
+### Added
+
+- **`stewards/sentinel.md`** — second steward. Aggregates cross-run signal that no single `/forge` run can see: read-only mandate violations (Phase 3.5/3.6), verification failures in load-bearing phases (4/5/7/7.5/8), Phase 6 forced-through low-confidence decisions, Stable Core target attempts, and brief drift (≥ 3 gaps per run).
+- Default lookback window: 30 days (configurable via `SENTINEL_WINDOW_DAYS` env var).
+- Recommend-only. Never modifies the work graph. Idempotent.
+- Five pattern detectors (A–E) each with explicit jq filters and threshold rules — fully deterministic, runs on haiku.
+- Inbox section ownership: Sentinel owns `## Sentinel: ...` sections; other stewards' sections are preserved on merge.
+
+### Changed
+
+- README and Roadmap reference Sentinel as shipped; next milestone is v2.2 (ConfigAuditor).
 
 ## [2.0.0] — 2026-05-11 — Persistent work graph + first steward
 
