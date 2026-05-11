@@ -163,7 +163,8 @@ Phase 2C  : Intelligence Synthesis + GO/NO-GO gate
 Phase 3   : Skill Gap Audit
 Phase 3.5 : Codebase Audit              (NEW — enhance mode only)
 Phase 3.6 : Baseline Tests              (NEW — enhance mode only)
-Phase 4   : Spec Writer                 (mode-aware)
+Phase 3.7 : Pre-Mortem                  (NEW v4.0 — 5 failure modes drafted before Spec)
+Phase 4   : Spec Writer                 (mode-aware; v4.0 must reference all 5 pre-mortem failure modes)
 Phase 5   : Plan Writer                 (mode-aware)
 Phase 6   : Code Execution              (mode-aware; enhance adds snapshot + file-lock)
 Phase 7   : Build + Test Gate           (mode-aware; enhance adds baseline + coverage gate)
@@ -393,6 +394,24 @@ If source files were touched (the agent violated its read-only mandate):
 4. Continue — the baseline numbers (if captured) are still valid; only the worktree pollution is rolled back.
 
 Print `✓ Phase 3.6: Baseline Tests captured`.
+
+## Step 5.7 — Pre-Mortem (v4.0)
+
+Read `phases/pre-mortem.md`, inject tokens, spawn agent. **Phase 3.7 (Pre-Mortem)** drafts five failure modes (security, performance, correctness, integration, operational) BEFORE the Spec Writer runs.
+
+This phase runs in BOTH greenfield and enhance mode — failure mode drafting applies regardless of substrate.
+
+Verification command (run after agent reports DONE):
+
+```bash
+grep -c "^### Failure mode" {{FORGE_CONTEXT_PATH}}
+```
+
+Pass condition: exactly `5`. If the count is wrong:
+1. Retry the phase once with broader context.
+2. If still wrong, log to `## Known Gaps / Blockers` and continue (the Spec Writer will see fewer constraints than intended, and Phase 8 will catch design gaps as the last line of defense).
+
+Print `✓ Phase 3.7: Pre-Mortem — 5 failure modes drafted`.
 
 ## Step 6 — Spec Writer
 

@@ -4,7 +4,33 @@ All notable changes to `agent-forge` are recorded here. The project follows [Kee
 
 ## [Unreleased]
 
-_Nothing yet. Next: v4.0 — Phase 3.7 Pre-Mortem (top-5 failure modes drafted before Spec)._
+_Nothing yet. Next: v5.0 — Inverted tasking ("Sir, you should…" — forge tells YOU what to act on)._
+
+## [4.0.0] — 2026-05-11 — Pre-Mortem (Phase 3.7) — failure-mode drafting before Spec
+
+### Added
+
+- **`phases/pre-mortem.md`** — new Phase 3.7. Runs in BOTH greenfield and enhance mode, between Phase 3.6 (Baseline Tests, enhance) / Phase 3 (Skill Gap Audit, greenfield) and Phase 4 (Spec Writer).
+- **Fan-out architecture** — dispatches 5 sub-agents in parallel, one per failure-mode category. Each gets 30 s budget; total under 3 min wall clock. Sonnet tier.
+- **Canonical 5-category coverage** — Security, Performance/scale, Correctness/edge case, Integration/contract drift, Operational/observability. Every brief gets all 5; no skipping by claiming a category doesn't apply (CLI tool's "auth bypass" becomes "argument injection / shell escape").
+- **Each failure mode is concrete and falsifiable** — structured format with Probability, Impact, Trigger, Mechanism, Mitigation, If-Deferred clauses.
+
+### Changed
+
+- **`phases/spec-writer.md`** — gains a non-negotiable Pre-Mortem contract clause. For each of the 5 failure modes, the spec must EITHER mitigate (with literal `pre-mortem failure mode N/5` text the orchestrator greps for) OR defer via Decision Log entry.
+- **`SKILL.md`** — adds Step 5.7 (Pre-Mortem dispatch) between Step 5.6 (Baseline Tests) and Step 6 (Spec Writer). Verification command: `grep -c "^### Failure mode" {{FORGE_CONTEXT_PATH}}` must equal exactly 5.
+- **Phase 4 verification extended** — `grep -c "pre-mortem failure mode [1-5]/5" <spec> >= 5`. Orchestrator retries once; on second failure logs to Known Gaps but doesn't block the run (Phase 8 Code Review is the last line of defense).
+- **Phase map in SKILL.md** adds Phase 3.7 to the loop diagram.
+
+### Architectural significance
+
+This is **Layer 3** of the Jarvis vector — the *"I've run 6 million scenarios"* anticipation quality, except deterministic and explicit instead of opaque LLM hand-wave. Combined with v2 (observability) and v3.0 (ambient triggers), the forge now:
+
+- **Observes** itself (v2 fleet)
+- **Reacts** to its environment (v3.0 triggers)
+- **Anticipates** its own failure modes (v4.0 pre-mortem)
+
+The final layer (v5.0 inverted tasking) gives the forge the *"Sir, you should…"* quality — it surfaces what YOU should act on next, not what to build.
 
 ## [3.0.0] — 2026-05-11 — Always-on stewards + salience filter
 
