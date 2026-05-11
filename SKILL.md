@@ -424,11 +424,20 @@ If `## Brief.Mode` is `enhance`: read `phases/uat-plan.md`, inject tokens, spawn
 
 Read `phases/roster-review.md`, inject tokens, spawn agent. Wait for completion.
 
-Read `<worktree>/forge-context.md`. Find `## Roster Changes Proposed` section. Print to user:
-`✓ Phase 9: Roster Review — [N] proposed, [N] applied, [N] in trial`
+**ChangeGate hook (v2.4):** before auto-applying any roster change, dispatch the `change-gate` steward in hook mode. Pass the proposed change as input via `forge-context.md`'s `## Roster Changes Proposed` section. ChangeGate evaluates the change against the user's policy (`~/.claude/change-gate.policy.md`, or built-in default) and returns one of three verdicts:
 
-If any change applied or any rollback occurred, also print:
+- `auto-apply` — proceed with normal auto-apply path.
+- `gate-manual` — downgrade to `propose-to-user`; write to `~/.claude/inbox.md` under `## ChangeGate: pending approval — <run_id>`; do not auto-apply.
+- `block` — hard-stop; record the attempt to the audit journal; do not auto-apply.
+
+Record ChangeGate's verdict in `forge-context.md ## Roster Changes Proposed` as an inline `[change-gate]` annotation per proposed change. If ChangeGate times out (> 20 s), default to `gate-manual` for safety.
+
+Read `<worktree>/forge-context.md`. Find `## Roster Changes Proposed` section. Print to user:
+`✓ Phase 9: Roster Review — [N] proposed, [N] auto-applied, [N] gated for manual, [N] blocked, [N] in trial`
+
+If any change applied, gated, or blocked occurred, also print:
 `  Audit journal: ~/.claude/skills/.history.jsonl`
+`  Inbox (if any gated/blocked): ~/.claude/inbox.md`
 
 ## Step 12 — Open PR
 

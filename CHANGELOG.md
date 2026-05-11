@@ -4,7 +4,33 @@ All notable changes to `agent-forge` are recorded here. The project follows [Kee
 
 ## [Unreleased]
 
-_Nothing yet. Next: `ChangeGate` steward (v2.4.0) — closes the four-steward fleet before v3.0 always-on lands._
+_Nothing yet. Next: v3.0 — always-on stewards via cron/file-watcher/git-hook + salience filter for inbox prioritization._
+
+## [2.4.0] — 2026-05-11 — ChangeGate (generalized risk gating)
+
+### Added
+
+- **`stewards/change-gate.md`** — fifth steward. Gates risky changes BEFORE Phase 9 auto-applies them. Closes the v2 four-steward observability fleet.
+- **Dual-mode operation:**
+  - **Hook mode** — invoked inline by Phase 9 before auto-apply. Returns `auto-apply` | `gate-manual` | `block`. Time-boxed at 20 s; on timeout defaults to `gate-manual` for safety.
+  - **Standalone mode** — `/forge steward change-gate` runs a 7-day weekly summary into the inbox.
+- **User-configurable policy file** — `~/.claude/change-gate.policy.md`. If absent, a sensible default applies: blocks Stable Core targets; gate-manuals auth/security paths, multi-tenant identifiers, secret material, > 500 LOC changes, runs with low-confidence forced-through decisions.
+- **SKILL.md integration:** Step 11 (Roster Review) now consults ChangeGate before auto-apply and records the verdict inline in `## Roster Changes Proposed`.
+
+### Changed
+
+- Phase 9 auto-apply path is no longer the only auto-apply path — it now goes through ChangeGate first. Existing behavior preserved for users without a custom policy (default policy is permissive for non-risky changes).
+
+### Drift coverage now complete (v2 fleet)
+
+| Steward | Watches | Release |
+|---|---|---|
+| Sentinel | What the system does | v2.1.0 |
+| ConfigAuditor | How it's configured | v2.2.0 |
+| PhaseROI | Whether it earns its cost | v2.3.0 |
+| ChangeGate | Whether the next change is safe | v2.4.0 ← this release |
+
+v3.0 (next) lifts these from manual triggers to always-on.
 
 ## [2.3.0] — 2026-05-11 — PhaseROI (cost-vs-value calibration)
 
