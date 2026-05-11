@@ -4,7 +4,19 @@ All notable changes to `agent-forge` are recorded here. The project follows [Kee
 
 ## [Unreleased]
 
-_Nothing yet. Next: `PhaseROI` steward (v2.3.0)._
+_Nothing yet. Next: `ChangeGate` steward (v2.4.0) — closes the four-steward fleet before v3.0 always-on lands._
+
+## [2.3.0] — 2026-05-11 — PhaseROI (cost-vs-value calibration)
+
+### Added
+
+- **`stewards/phase-roi.md`** — fourth steward. Calibrates each phase's contribution to outcomes across three economic axes:
+  - **Skip-without-regret detector** — flags phases skipped in ≥ 50% of runs with ≤ 3 tied downstream gaps. Deprecation candidates.
+  - **Low-confidence pattern** — flags phases whose decisions median < 50% confidence AND downstream PRs nonetheless acted on them. Reading rule branches by declared model tier (escalate vs. narrow scope vs. revise rules).
+  - **Orphan output detector** — flags phases that write a forge-context section no downstream phase declares in its `## Context sections needed`.
+- Default lookback: 60 days (`ROI_WINDOW_DAYS`). Longer than other stewards — ROI signal accumulates slowly.
+- Minimum sample: 15 runs per phase to evaluate; suppresses noise on rarely-used phases.
+- Drift-axis coverage now complete: **what** (Sentinel), **how** (ConfigAuditor), **cost** (PhaseROI).
 
 ## [2.2.0] — 2026-05-11 — ConfigAuditor (model-tier + Stable Core drift)
 
