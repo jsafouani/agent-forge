@@ -4,7 +4,18 @@ All notable changes to `agent-forge` are recorded here. The project follows [Kee
 
 ## [Unreleased]
 
-_Nothing yet. Next: `ConfigAuditor` steward (v2.2.0)._
+_Nothing yet. Next: `PhaseROI` steward (v2.3.0)._
+
+## [2.2.0] — 2026-05-11 — ConfigAuditor (model-tier + Stable Core drift)
+
+### Added
+
+- **`stewards/config-auditor.md`** — third steward. Audits the gap between *declared* configuration and *actual* runtime behavior. Three drift detectors:
+  - **Model-tier drift** — phases whose declared `## Recommended model` doesn't match the model actually used in ≥ 60% of runs (over a 30-day window, min 5 runs to suppress noise).
+  - **Stable Core integrity** — verifies all six immutable skill files exist, frontmatter `name:` fields match conventions, and byte counts don't decrease by > 25% (catches truncation / accidental edits).
+  - **Verification dormancy** — phases whose declared verification command appears to never have fired (≥ 20 runs, 0 `verification_failed` events) — suggests the orchestrator is skipping the check.
+- Default lookback: 30 days (`AUDITOR_WINDOW_DAYS` env var). Baseline byte counts stored at `~/.claude/auditor-baseline.txt`.
+- Drift-axis coverage: **what the system does** (Sentinel) + **how it's configured** (ConfigAuditor). Cost calibration (PhaseROI) lands in v2.3.
 
 ## [2.1.0] — 2026-05-11 — Sentinel (cross-run contract enforcement)
 
