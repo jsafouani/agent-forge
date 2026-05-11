@@ -170,9 +170,12 @@ Phase 7   : Build + Test Gate           (mode-aware; enhance adds baseline + cov
 Phase 7.5 : Smoke Test                  (NEW v3 — verifies built artifact actually runs)
 Phase 8   : Code Review                 (mode-aware; enhance is diff-scoped)
 Phase 8.5 : UAT Plan                    (NEW — enhance mode only)
-Phase 9   : Roster Review               (unchanged)
+Phase 9   : Roster Review               (unchanged; v2.4 adds ChangeGate hook)
 Phase 10  : Open PR                     (mode-aware body)
 Phase 11  : Observe                     (NEW v2.0 — appends events to ~/.claude/work-graph.jsonl)
+
+Out-of-loop phases (v3.0+):
+Salience Filter                         (re-ranks ~/.claude/inbox.md; invoked by triggers + /forge inbox --reprioritize)
 ```
 
 ## Step 0 — Arg-form dispatch (v2.0)
@@ -187,6 +190,15 @@ If the argument is exactly the word `inbox` (no whitespace, case-insensitive):
    - If missing → print `Inbox empty. Run a steward to populate it (e.g., /forge steward stale-skill-reaper).` and exit 0.
    - If present → print the file contents verbatim to stdout, then exit 0.
 2. Do NOT dispatch any phases. Do NOT write to the work graph (no `subagent_dispatched` events).
+
+**Arg form 1b: `/forge inbox --reprioritize`** (v3.0) — re-rank the inbox by salience, then print.
+
+If the argument is `inbox --reprioritize` (case-insensitive):
+
+1. Dispatch the salience-filter phase: read `phases/salience-filter.md`, inject `{{INBOX_PATH}}` = `~/.claude/inbox.md`, spawn agent. Wait for completion.
+2. After the phase rewrites the inbox in salience order, print the new contents to stdout.
+3. Exit 0.
+4. This is the path the v3.0 triggers (cron-daily, git-post-commit, file-watcher) invoke after running stewards — keeps the inbox always sorted by attention priority.
 
 **Arg form 2: `/forge steward <name>`** — run one steward.
 

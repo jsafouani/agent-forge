@@ -4,7 +4,28 @@ All notable changes to `agent-forge` are recorded here. The project follows [Kee
 
 ## [Unreleased]
 
-_Nothing yet. Next: v3.0 — always-on stewards via cron/file-watcher/git-hook + salience filter for inbox prioritization._
+_Nothing yet. Next: v4.0 — Phase 3.7 Pre-Mortem (top-5 failure modes drafted before Spec)._
+
+## [3.0.0] — 2026-05-11 — Always-on stewards + salience filter
+
+### Added
+
+- **`triggers/` directory** — three documented trigger configurations that turn the v2 stewards from manual `/forge steward X` into ambient, signal-driven runs:
+  - **`triggers/cron-daily.md`** — full 5-steward sweep at 06:00 local time. Linux/macOS crontab + Windows Task Scheduler PowerShell. Pause via `~/.claude/triggers.pause` sentinel.
+  - **`triggers/git-post-commit.md`** — runs ConfigAuditor + Sentinel after every commit (the two stewards that benefit most from fresh signal). Backgrounded; doesn't block the commit. Per-repo opt-out via `.forge-no-post-commit` sentinel.
+  - **`triggers/file-watcher.md`** — runs StaleSkillReaper when `~/.claude/skills/` mutates. fswatch (macOS) / inotifywait (Linux) / Watchman (Windows). 30-second debounce.
+- **`triggers/README.md`** — overview, opt-out instructions, philosophy (markdown-only; explicit user installation; no hidden daemons).
+- **`phases/salience-filter.md`** — new out-of-loop phase. Re-ranks `~/.claude/inbox.md` by `salience = (severity_weight × confidence) ÷ (1 + days_since_observed)` with special rules (ChangeGate blocks → always top; Stable Core integrity × 3 multiplier; clean-section findings → always bottom).
+- **`/forge inbox --reprioritize`** — new arg form. Dispatches the salience filter and prints the re-sorted inbox.
+
+### Changed
+
+- `SKILL.md` Step 0 (arg-form dispatch) gains the `--reprioritize` flag handling.
+- Phase map in `SKILL.md` adds the salience filter as an out-of-loop entry.
+
+### Architectural significance
+
+This is the **qualitative tipping point** in the Jarvis vector. Before v3.0, the forge waits to be invoked. After v3.0, the forge is **ambient** — stewards run on time (cron), git activity (post-commit), and roster mutations (file watcher), and the inbox stays sorted by attention priority without the user thinking about it. v4.0 (pre-mortem) and v5.0 (inverted tasking) stack on this foundation.
 
 ## [2.4.0] — 2026-05-11 — ChangeGate (generalized risk gating)
 
