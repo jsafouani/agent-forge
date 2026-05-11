@@ -1,0 +1,24 @@
+# Runtime artifacts (live in worktrees, never in the repo)
+forge-context.md
+HANDOFF.md
+REVIEW_NOTES.md
+PR_BODY.md
+ROSTER_REVIEW.md
+UAT_PLAN.md
+test-output.txt
+forge-nogo-report.md
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor noise
+.vscode/
+.idea/
+*.swp
+*~
+
+# Local config that should not be shared
+.claude/
+*.local.json
